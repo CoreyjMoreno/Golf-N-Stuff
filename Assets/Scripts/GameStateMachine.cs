@@ -1,11 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class GameStateMachine : MonoBehaviour
 {
     public Putter PutterObject;
+
     public CameraOrbit CameraObject;
+
+    public GameObject PlayingLevelScreen;
+
+    public GameObject EndLevelScreen;
 
     public Rigidbody GolfBall;
 
@@ -18,18 +25,37 @@ public class GameStateMachine : MonoBehaviour
 
     public int MinYValue;
 
+    public int PuttCount = 0;
+
+    public TMP_Text ScoreDisplay;
+
+    public TMP_Text EndScoreDisplay;
+
+    public TMP_Text TermScoreDisplay;
+
+    public int Par;
+
+    public TMP_Text ParDisplay;
+
     private Vector3 lastPos;
     public enum GameState
     {
         AIMIMG,
         PUTTING,
-        WAITING
+        WAITING,
+        END
     }
     public GameState currentState;
 
     // Start is called before the first frame update
     void Start()
     {
+        // update the Par Display
+        ParDisplay.text = "Par: " + Par;
+        // set end level screen to off
+        EndLevelScreen.SetActive(false);
+        // set playing level screen to on
+        PlayingLevelScreen.SetActive(true);
         // start the game in aiming
         ChangeState(GameState.AIMIMG);
     }
@@ -47,6 +73,14 @@ public class GameStateMachine : MonoBehaviour
                 break;
 
             case (GameState.WAITING):
+                
+                // if ball is in the hole
+                if (EndLevelScreen.activeSelf)
+                {
+                    // End of Level reached
+                    ChangeState(GameState.END);
+                }
+
                 // ball is below a certin vertical height aka out of bounds, reset to previous putt
                 if (GolfBall.transform.position.y <  MinYValue)
                 {
@@ -95,6 +129,10 @@ public class GameStateMachine : MonoBehaviour
 
             case (GameState.WAITING):
                 ToWaiting();
+                break;
+
+            case (GameState.END):
+                ToEnd();
                 break;
 
         }
@@ -147,6 +185,69 @@ public class GameStateMachine : MonoBehaviour
         // turn off indicator
         CameraObject.DisableAimLine();
 
+        // Count A Put
+        // add one count to the put counter
+        PuttCount++;
+        
+        // update Score counter display
+        ScoreDisplay.text = "Putt Count: " + PuttCount;
+        
+        
+
+    }
+
+    // end of level
+    public void ToEnd()
+    {
+        // set end display
+        EndScoreDisplay.text = "Hole in: " + PuttCount;
+
+        // display the golf score term
+
+            // hole in one
+        if (PuttCount == 1)
+        {
+            TermScoreDisplay.text = "HOLE-N-ONE";
+        }
+        else
+        {
+            switch (PuttCount - Par)
+            {
+                case (-2):
+                    TermScoreDisplay.text = "Eagle!";
+                break;
+
+                case (-1):
+                    TermScoreDisplay.text = "Birdie";
+                break;
+
+                case (0):
+                    TermScoreDisplay.text = "Par";
+                break;
+
+                case (1):
+                    TermScoreDisplay.text = "Bogey";
+                break;
+
+                case (2):
+                    TermScoreDisplay.text = "Double-Bogey";
+                break;
+
+                case (3):
+                    TermScoreDisplay.text = "Triple-Bogey";
+                break;
+            }
+        }
+        
+        // Enable Camera Movement
+        CameraObject.EnableCameraControlls();
+
+        // Dsiable putter if not already
+        PutterObject.DisablePutter();
+
+        ResetGolfBallVelocity();
+        
+        
     }
 
     void resetCounter()
@@ -164,4 +265,6 @@ public class GameStateMachine : MonoBehaviour
         GolfBall.angularVelocity = Vector3.zero;
 
     }
+
+   
 }
