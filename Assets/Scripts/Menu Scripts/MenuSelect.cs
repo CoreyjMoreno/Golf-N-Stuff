@@ -15,7 +15,6 @@ public class MenuSelect : MonoBehaviour
     void Start()
     {
         SetMenuMain();
-
     }
 
     // set menu to level select

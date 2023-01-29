@@ -143,7 +143,9 @@ public class CameraOrbit : MonoBehaviour
 
     public IEnumerator WaitASec()
     {
+        // wait for a single second
         yield return new WaitForSeconds(1);
+        // then return camera controlls back to player
         ready = true;
     }
 

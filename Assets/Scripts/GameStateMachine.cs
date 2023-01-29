@@ -16,6 +16,11 @@ public class GameStateMachine : MonoBehaviour
 
     public Rigidbody GolfBall;
 
+    // heads up display
+    public HUDManager HUD;
+
+    public TerrainPhys physics;
+
     public float yPosition;
 
     public float WaitIdleTimeMax;
@@ -27,15 +32,7 @@ public class GameStateMachine : MonoBehaviour
 
     public int PuttCount = 0;
 
-    public TMP_Text ScoreDisplay;
-
-    public TMP_Text EndScoreDisplay;
-
-    public TMP_Text TermScoreDisplay;
-
     public int Par;
-
-    public TMP_Text ParDisplay;
 
     private Vector3 lastPos;
     public enum GameState
@@ -50,8 +47,6 @@ public class GameStateMachine : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // update the Par Display
-        ParDisplay.text = "Par: " + Par;
         // set end level screen to off
         EndLevelScreen.SetActive(false);
         // set playing level screen to on
@@ -73,13 +68,6 @@ public class GameStateMachine : MonoBehaviour
                 break;
 
             case (GameState.WAITING):
-                
-                // if ball is in the hole
-                if (EndLevelScreen.activeSelf)
-                {
-                    // End of Level reached
-                    ChangeState(GameState.END);
-                }
 
                 // ball is below a certin vertical height aka out of bounds, reset to previous putt
                 if (GolfBall.transform.position.y <  MinYValue)
@@ -154,7 +142,7 @@ public class GameStateMachine : MonoBehaviour
         // Dsiable putter if not already
         PutterObject.DisablePutter();
 
-        
+        // set all velocty to 0
         ResetGolfBallVelocity();
 
     }
@@ -186,11 +174,9 @@ public class GameStateMachine : MonoBehaviour
         CameraObject.DisableAimLine();
 
         // Count A Put
-        // add one count to the put counter
+        // update HUD
         PuttCount++;
-        
-        // update Score counter display
-        ScoreDisplay.text = "Putt Count: " + PuttCount;
+        HUD.UpdatePuttCount();
         
         
 
@@ -200,50 +186,17 @@ public class GameStateMachine : MonoBehaviour
     public void ToEnd()
     {
         // set end display
-        EndScoreDisplay.text = "Hole in: " + PuttCount;
+        HUD.SetText();
 
         // display the golf score term
-
-            // hole in one
-        if (PuttCount == 1)
-        {
-            TermScoreDisplay.text = "HOLE-N-ONE";
-        }
-        else
-        {
-            switch (PuttCount - Par)
-            {
-                case (-2):
-                    TermScoreDisplay.text = "Eagle!";
-                break;
-
-                case (-1):
-                    TermScoreDisplay.text = "Birdie";
-                break;
-
-                case (0):
-                    TermScoreDisplay.text = "Par";
-                break;
-
-                case (1):
-                    TermScoreDisplay.text = "Bogey";
-                break;
-
-                case (2):
-                    TermScoreDisplay.text = "Double-Bogey";
-                break;
-
-                case (3):
-                    TermScoreDisplay.text = "Triple-Bogey";
-                break;
-            }
-        }
+        HUD.DisplayEndStats();
         
         // Enable Camera Movement
         CameraObject.EnableCameraControlls();
 
         // Dsiable putter if not already
         PutterObject.DisablePutter();
+
 
         ResetGolfBallVelocity();
         
